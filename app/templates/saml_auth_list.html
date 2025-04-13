@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Select a SAML Application</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for config in configs %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ config.sp_name }}</h5>
+                    <p class="card-text">Entity ID: {{ config.entity_id }}</p>
+                    <a href="{{ url_for('saml_auth', config_id=config.id) }}" class="btn btn-primary">Select</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

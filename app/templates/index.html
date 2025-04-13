@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <h2 class="mb-4">Select Authentication Method</h2>
+        <div class="d-grid gap-3">
+            <a href="{{ url_for('saml_options') }}" class="btn btn-primary btn-lg">SAML</a>
+            <a href="#" class="btn btn-secondary btn-lg">OAuth/OIDC (Coming Soon)</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

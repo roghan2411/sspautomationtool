@@ -1,0 +1,20 @@
+[
+  {
+    "sp_name": "sp1",
+    "entity_id": "https://127.0.0.1:5000/saml/metadata/1",
+    "acs_urls": [
+      "https://roghan-15195:5000/1/acsurl1",
+      "https://roghan-15195:5000/1/acsurl2"
+    ],
+    "certificate": "",
+    "private_key": "",
+    "sign_requests": false,
+    "want_assertions_signed": false,
+    "want_response_signed": false,
+    "issuer_url": "https://roghan-15195:6401/iamapps/ssologin/custom_saml_app/b89b8dc0f4d8d568938c8ec5901a9d019cee136d",
+    "login_url": "https://roghan-15195:6401/iamapps/ssologin/custom_saml_app/b89b8dc0f4d8d568938c8ec5901a9d019cee136d",
+    "logout_url": "https://roghan-15195:6401/iamapps/ssologout/custom_saml_app/b89b8dc0f4d8d568938c8ec5901a9d019cee136d",
+    "id": "1",
+    "created_at": "2025-04-12T17:40:15.965808"
+  }
+]

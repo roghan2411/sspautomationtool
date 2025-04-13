@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>SAML Authentication</h2>
+            <a href="{{ url_for('saml_auth_list') }}" class="btn btn-secondary">Back</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="card mb-3">
+            <div class="card-header">
+                SAML Request Options
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('saml_auth_generate', config_id=config_id) }}">
+                    <div class="mb-3">
+                        <label for="acs_url" class="form-label">Assertion Consumer Service URL *</label>
+                        <select class="form-select" id="acs_url" name="acs_url" required>
+                            <option value="">Select ACS URL...</option>
+                            {% for url in acs_urls %}
+                            <option value="{{ url }}">{{ url }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">The URL where the IdP will send the SAML response</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="binding" class="form-label">Protocol Binding</label>
+                        <select class="form-select" id="binding" name="binding">
+                            <option value="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST">HTTP POST</option>
+                            <option value="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect">HTTP Redirect</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name_id_format" class="form-label">NameID Format</label>
+                        <select class="form-select" id="name_id_format" name="name_id_format">
+                            <option value="urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified">Unspecified</option>
+                            <option value="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress">Email Address</option>
+                            <option value="urn:oasis:names:tc:SAML:2.0:nameid-format:persistent">Persistent</option>
+                            <option value="urn:oasis:names:tc:SAML:2.0:nameid-format:transient">Transient</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="sign_request" name="sign_request">
+                            <label class="form-check-label" for="sign_request">
+                                Sign SAML Request
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="force_authn" name="force_authn">
+                            <label class="form-check-label" for="force_authn">
+                                Force Authentication
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_passive" name="is_passive">
+                            <label class="form-check-label" for="is_passive">
+                                Passive Authentication
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button id="generateSAMLRequestBtn" type="submit" class="btn btn-primary">Generate SAML Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if saml_request %}
+        <div class="card mt-4">
+            <div class="card-header">
+                Generated SAML Request
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="samlRequestText" class="form-label">SAML Request XML</label>
+                    <textarea class="form-control" id="samlRequestText" rows="10" readonly>{{ saml_request }}</textarea>
+                </div>
+                {% if login_url %}
+                <div class="d-grid gap-2">
+                    <a href="{{ login_url }}" class="btn btn-success">Proceed to IdP Login</a>
+                    <button id="toggleRawRequestBtn" type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#rawRequest">
+                        Show Raw Request
+                    </button>
+                </div>
+                <div class="collapse mt-3" id="rawRequest">
+                    <div class="card card-body">
+                        <code class="user-select-all">{{ login_url }}</code>
+                    </div>
+                </div>
+                {% else %}
+                <form method="POST" action="{{ url_for('saml_auth_send') }}">
+                    <input type="hidden" name="saml_request" value="{{ saml_request }}">
+                    <div class="d-grid">
+                        <button id="sendRequestBtn" type="submit" class="btn btn-success">Send Request</button>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

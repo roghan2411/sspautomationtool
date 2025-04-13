@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2>SAML Response</h2>
+                <a href="{{ url_for('saml_auth_list') }}" class="btn btn-secondary">Back to Auth List</a>
+            </div>
+
+            <div class="row">
+                <!-- Raw SAML Response Column -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Raw SAML Response</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <textarea class="form-control font-monospace" rows="30" readonly>{{ response }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parsed Parameters Column -->
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">SAML Parameters</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Status</td>
+                                            <td>
+                                                <span class="badge {% if saml_data.status == 'urn:oasis:names:tc:SAML:2.0:status:Success' %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {{ saml_data.status.split(':')[-1] }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Issuer</td>
+                                            <td>{{ saml_data.issuer }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Destination</td>
+                                            <td>{{ saml_data.destination }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>In Response To</td>
+                                            <td>{{ saml_data.in_response_to }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Name ID</td>
+                                            <td>{{ saml_data.name_id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Time Constraints</td>
+                                            <td>
+                                                <strong>Not Before:</strong> {{ saml_data.not_before }}<br>
+                                                <strong>Not On or After:</strong> {{ saml_data.not_on_or_after }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Audience Restriction</td>
+                                            <td>{{ saml_data.audience }}</td>
+                                        </tr>
+                                        {% if saml_data.attributes %}
+                                        <tr>
+                                            <td>Assertion Attributes</td>
+                                            <td>
+                                                <table class="table table-sm table-bordered mb-0">
+                                                    {% for name, values in saml_data.attributes.items() %}
+                                                    <tr>
+                                                        <td class="text-muted">{{ name }}</td>
+                                                        <td>
+                                                            {% if values|length == 1 %}
+                                                                {{ values[0] }}
+                                                            {% else %}
+                                                                <ul class="list-unstyled mb-0">
+                                                                    {% for value in values %}
+                                                                    <li>{{ value }}</li>
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

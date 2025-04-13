@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Edit SAML Configuration</h2>
+            <a href="{{ url_for('saml_config') }}" class="btn btn-secondary">Back</a>
+        </div>
+        <form method="POST">
+            <div class="mb-3">
+                <label for="sp_name" class="form-label">Service Provider Name</label>
+                <input type="text" class="form-control" id="sp_name" name="sp_name" value="{{ config.sp_name }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="entity_id" class="form-label">Entity ID</label>
+                <input type="text" class="form-control" id="{{ config.sp_name|replace(' ', '_') }}_entityID" name="entity_id" value="{{ config.entity_id }}" readonly>
+                <div class="form-text">Entity ID is auto-generated based on your configuration ID</div>
+            </div>
+            <div class="mb-3">
+                <label for="acs_url_count" class="form-label">Number of ACS URLs</label>
+                <select class="form-control" id="acs_url_count" name="acs_url_count" required>
+                    <option value="">Select number of ACS URLs</option>
+                    <option value="1" {% if config.acs_urls|length == 1 %}selected{% endif %}>1</option>
+                    <option value="2" {% if config.acs_urls|length == 2 %}selected{% endif %}>2</option>
+                    <option value="3" {% if config.acs_urls|length == 3 %}selected{% endif %}>3</option>
+                    <option value="4" {% if config.acs_urls|length == 4 %}selected{% endif %}>4</option>
+                    <option value="5" {% if config.acs_urls|length == 5 %}selected{% endif %}>5</option>
+                </select>
+                <div class="form-text">ACS URLs will be auto-generated after saving</div>
+            </div>
+            <div class="mb-3">
+                <label for="base_url" class="form-label">Base URL for ACS Endpoints</label>
+                <input type="url" class="form-control" id="{{ config.sp_name|replace(' ', '_') }}_baseUrl" name="base_url" required 
+                       value="{{ config.acs_urls[0].rsplit('/', 2)[0] if config.acs_urls }}"
+                       placeholder="https://example.com">
+                <div class="form-text">Base URL for generating ACS endpoints (e.g., https://example.com)</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="issuer_url" class="form-label">Issuer URL</label>
+                <input type="url" class="form-control" id="{{ config.sp_name|replace(' ', '_') }}_issuerUrl" name="issuer_url" value="{{ config.issuer_url }}" required>
+                <div class="form-text">The URL that identifies the IdP issuer</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="login_url" class="form-label">Login URL</label>
+                <input type="url" class="form-control" id="{{ config.sp_name|replace(' ', '_') }}_loginUrl" name="login_url" value="{{ config.login_url }}" required>
+                <div class="form-text">The IdP's SSO URL where SAML authentication requests will be sent</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="logout_url" class="form-label">Logout URL</label>
+                <input type="url" class="form-control" id="{{ config.sp_name|replace(' ', '_') }}_logoutUrl" name="logout_url" value="{{ config.logout_url }}" required>
+                <div class="form-text">The IdP's Single Logout URL where SAML logout requests will be sent</div>
+            </div>
+
+            <div class="mb-3">
+                <label for="certificate" class="form-label">X.509 Certificate (Optional)</label>
+                <textarea class="form-control" id="certificate" name="certificate" rows="5">{{ config.certificate }}</textarea>
+                <div class="form-text">Your service provider's public certificate for signing SAML requests</div>
+            </div>
+            <div class="mb-3">
+                <label for="private_key" class="form-label">Private Key (Optional)</label>
+                <textarea class="form-control" id="private_key" name="private_key" rows="5">{{ config.private_key }}</textarea>
+                <div class="form-text">Your service provider's private key for signing SAML requests</div>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="sign_requests" name="sign_requests" {% if config.sign_requests %}checked{% endif %}>
+                    <label class="form-check-label" for="sign_requests">
+                        Sign SAML Requests
+                    </label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="want_assertions_signed" name="want_assertions_signed" {% if config.want_assertions_signed %}checked{% endif %}>
+                    <label class="form-check-label" for="want_assertions_signed">
+                        Require Signed Assertions
+                    </label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="want_response_signed" name="want_response_signed" {% if config.want_response_signed %}checked{% endif %}>
+                    <label class="form-check-label" for="want_response_signed">
+                        Require Signed Response
+                    </label>
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}{% endblock %}

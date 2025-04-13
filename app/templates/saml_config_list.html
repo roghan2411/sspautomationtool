@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <h2>SAML SP Configurations</h2>
+    </div>
+    <div class="col text-end">
+        <a href="{{ url_for('saml_config_new') }}" class="btn btn-primary">Add New Configuration</a>
+        <a href="{{ url_for('saml_options') }}" class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>SP Name</th>
+                <th>Entity ID</th>
+                <th>Primary ACS URL</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for config in configs %}
+            <tr>
+                <td>{{ config.sp_name }}</td>
+                <td>{{ config.entity_id }}</td>
+                <td>{{ config.acs_urls[0] if config.acs_urls else '' }}</td>
+                <td>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('edit_saml_config', config_id=config.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <button id="spDetailsBtn{{ config.id }}" type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#spDetailsModal{{ config.id }}">
+                            SP Details
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ config.id }}">
+                            Delete
+                        </button>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Delete Confirmation Modal -->
+            <div class="modal fade" id="deleteModal{{ config.id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Delete Configuration</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Are you sure you want to delete the SAML configuration for "{{ config.sp_name }}"?</p>
+                            <p class="text-danger">This action cannot be undone.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-danger" onclick="deleteConfig('{{ config.id }}')" data-bs-dismiss="modal">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SP Details Modal -->
+            <div class="modal fade" id="spDetailsModal{{ config.id }}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">SP Details - {{ config.sp_name }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <h6>SP Entity ID:</h6>
+                                <pre class="bg-light p-2" id="{{ config.sp_name|replace(' ', '_') }}_entityID">{{ config.entity_id }} <i class="bi bi-clipboard" onclick="copyToClipboard('{{ config.sp_name|replace(' ', '_') }}_entityID')" style="cursor: pointer;"></i></pre>
+                            </div>
+                            <div class="mb-3">
+                                <h6>SP Assertion Consumer Service (ACS) URLs:</h6>
+                                {% for url in config.acs_urls %}
+                                <pre class="bg-light p-2" id="{{ config.sp_name|replace(' ', '_') }}_acsUrl{{ loop.index }}">{{ url }} <i class="bi bi-clipboard" onclick="copyToClipboard('{{ config.sp_name|replace(' ', '_') }}_acsUrl{{ loop.index }}')" style="cursor: pointer;"></i></pre>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <h6>SP Login Initiate URL:</h6>
+                                <pre class="bg-light p-2" id="{{ config.sp_name|replace(' ', '_') }}_loginUrl">{{ url_for('saml_auth', config_id=config.id, _external=True) }} <i class="bi bi-clipboard" onclick="copyToClipboard('{{ config.sp_name|replace(' ', '_') }}_loginUrl')" style="cursor: pointer;"></i></pre>
+                            </div>
+                            <div class="mb-3">
+                                <h6>SP Metadata URL:</h6>
+                                <pre class="bg-light p-2" id="{{ config.sp_name|replace(' ', '_') }}_metadataUrl">{{ url_for('saml_metadata', sp_id=config.id, _external=True) }} <i class="bi bi-clipboard" onclick="copyToClipboard('{{ config.sp_name|replace(' ', '_') }}_metadataUrl')" style="cursor: pointer;"></i></pre>
+                            </div>
+                            <div class="mb-3">
+                                <h6>Update URLs:</h6>
+                                <div class="input-group">
+                                    <input type="url" class="form-control" id="accessUrl{{ config.id }}" 
+                                           placeholder="Enter access URL">
+                                    <button class="btn btn-primary" onclick="configureUrls('{{ config.id }}')">
+                                        Update URLs
+                                    </button>
+                                </div>
+                                <small class="text-muted">Enter base URL to update all SAML endpoints</small>
+                            </div>
+                            <div class="mb-3">
+                                <h6>Sign Requests:</h6>
+                                <pre class="bg-light p-2">{{ 'Yes' if config.sign_requests else 'No' }}</pre>
+                            </div>
+                            <div class="mb-3">
+                                <h6>Want Assertions Signed:</h6>
+                                <pre class="bg-light p-2">{{ 'Yes' if config.want_assertions_signed else 'No' }}</pre>
+                            </div>
+                            <div class="mb-3">
+                                <a href="{{ url_for('saml_metadata_download', sp_id=config.id) }}" class="btn btn-primary">
+                                    Download SP Metadata
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center">No configurations found. Click "Add New Configuration" to create one.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function configureUrls(configId) {
+    const accessUrl = document.getElementById(`accessUrl${configId}`).value;
+    
+    if (!accessUrl) {
+        alert('Please enter an access URL');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/configure-urls', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                accessUrl: accessUrl,
+                configId: configId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('SAML URLs configured successfully!');
+            window.location.reload();
+        } else {
+            alert(data.error || 'Failed to configure SAML URLs');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function deleteConfig(configId) {
+    try {
+        const response = await fetch(`/api/saml-config/${configId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (response.ok) {
+            alert('Configuration deleted successfully');
+            window.location.reload();
+        } else {
+            const data = await response.json();
+            alert(data.error || 'Failed to delete configuration');
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const tempInput = document.createElement('input');
+    tempInput.value = element.textContent;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    alert('Copied to clipboard');
+}
+</script>
+{% endblock %}
